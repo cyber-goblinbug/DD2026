@@ -42,6 +42,20 @@ app.get("/images/sample.jpg", (req, res) => {
   let filePath = path.join(__dirname, "static", "images", "sample.jpg");
   res.sendFile(filePath);
 });
+
+app.get("/api/items",(req,res)=>{
+  res.send("this is a delete respone from /api/items/")
+  });
+app.put("/api/items",(req,res)=>{
+  res.send("this is a put respone from /api/items/")
+  });
+app.post("/api/items/:id",(req,res)=>{
+  res.send("this is a post respone from /api/items/")
+  });
+app.delete("/api/items/:id",(req,res)=>{
+  res.send("this is a post delete from /api/items/")
+  });
+
 // start the server
 app.listen(port, () => {
   console.log(`Example app listening at http://localhost:${port}`);
