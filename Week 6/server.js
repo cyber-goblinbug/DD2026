@@ -20,6 +20,12 @@ const path = require("path");
 // The function takes a root directory from which to serve static assets. In this case, we are serving files from the "static" directory.
 app.use(express.static(path.join(__dirname, "static")));
 
+
+//data
+const directory = require("./data/directory.json");
+const { dir } = require("console");
+console.log(directory)
+
 // generate routes
 app.get("/", (req, res) => {
   // sendFile is used to send a file as a response
@@ -55,6 +61,14 @@ app.post("/api/items/:id",(req,res)=>{
 app.delete("/api/items/:id",(req,res)=>{
   res.send("this is a delete response from /api/items/")
   });
+app.get("/directory",(req,res)=>{
+  res.render("directory",{directory: directory} );
+    
+})
+app.get("/directory:id",(req,res)=>{
+  res.render("directory",{directory: directory} );
+    
+})
 
 // start the server
 app.listen(port, () => {
