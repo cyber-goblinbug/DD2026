@@ -26,7 +26,19 @@ const destinationSchema = new mongoose.Schema({
   description: String,
   image: String
 });
+const activitySchema = new mongoose.Schema({
+  page: String,
+  name: String,
+  description: String,
+  image: String,
+  cost: Number,
+  destination:{
+    type: mongoose.Schema.Types.ObjectID, 
+    ref: "destinantions"
+ }
+})
 const Destination = mongoose.model('destinations', destinationSchema);
+const activity = mongoose.model("activites", activitySchema)
 
 async function main() {
   await mongoose.connect('mongodb://127.0.0.1:27017/travelsites');
@@ -64,6 +76,8 @@ app.post("/destinations", async(req,res)=>{
     description,
     image
   });
+
+
   await newDestination.save();
 
   res.send("Destination added successfully");
@@ -73,7 +87,28 @@ app.get ("/destinations", async(req,res)=>{
   const destinations = await Destination.find().lean();
   res.render ("destinations", {"destinations": destinations, "title": "Destinations"});
 });
+//Get a specific destination by id
+app.get ("/destinations/:id", async(req,res)=>{
+  const {id} = req.params
+  const destinations = await Destination.findById(id).lean();
+  res.render ("details", {destinations: destinations, title: destinations.name});
+});
+// generate route for activities
+app.post("/activities", async(req,res)=>{
+  const{page,name,description,image,cost,destination} = req.body;
+  console.log(req.body)
+  const newActivity =  activity({
+    page,
+    name,
+    description,
+    image,
+    cost,
+    destination
+  });
 
+  await newActivity.save();
+
+  res.send("Activity added successfully");
 // start the server
 app.listen(port, () => {
   console.log(`Example app listening at http://localhost:${port}`);
