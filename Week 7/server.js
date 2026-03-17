@@ -83,10 +83,16 @@ app.post("/destinations", async(req,res)=>{
   res.send("Destination added successfully");
 
 });
-app.get ("/destinations", async(req,res)=>{
-  const destinations = await Destination.find().lean();
-  res.render ("destinations", {"destinations": destinations, "title": "Destinations"});
-});
+app.get("/destinations/:id", async (req, res) => {
+  const { id } = req.params;
+  const destination = await Destination.findById(id).lean();
+  const activities = await Activity.find({ destination: id }).lean();
+  res.render("details", {
+    destination: destination,
+    title: destination.name,
+    activities: activities,
+  });
+});;
 //Get a specific destination by id
 app.get ("/destinations/:id", async(req,res)=>{
   const {id} = req.params
@@ -94,21 +100,18 @@ app.get ("/destinations/:id", async(req,res)=>{
   res.render ("details", {destinations: destinations, title: destinations.name});
 });
 // generate route for activities
-app.post("/activities", async(req,res)=>{
-  const{page,name,description,image,cost,destination} = req.body;
-  console.log(req.body)
-  const newActivity =  activity({
-    page,
+app.post("/activities", async (req, res) => {
+  const { name, description, image, cost, destination } = req.body;
+  const newActivity = new Activity({
     name,
     description,
     image,
     cost,
-    destination
+    destination,
   });
-
   await newActivity.save();
-
   res.send("Activity added successfully");
+});
 // start the server
 app.listen(port, () => {
   console.log(`Example app listening at http://localhost:${port}`);
