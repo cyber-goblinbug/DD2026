@@ -27,26 +27,24 @@ const destinationSchema = new mongoose.Schema({
   image: String
 });
 const activitySchema = new mongoose.Schema({
-  page: String,
   name: String,
   description: String,
   image: String,
   cost: Number,
-  destination:{
-    type: mongoose.Schema.Types.ObjectID, 
-    ref: "destinantions"
- }
-})
-const Destination = mongoose.model('destinations', destinationSchema);
-const activity = mongoose.model("activites", activitySchema)
+  destination: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "destinations",
+  },
+});
+const Destination = mongoose.model("destinations", destinationSchema);
+
+const Activity = mongoose.model("activities", activitySchema);
 
 async function main() {
-  await mongoose.connect('mongodb://127.0.0.1:27017/travelsites');
-
+  await mongoose.connect("mongodb://127.0.0.1:27017/travelsite");
   // use `await mongoose.connect('mongodb://user:password@127.0.0.1:27017/test');` if your database has auth enabled
 }
-main().catch(err => console.log(err));
-
+main().catch((err) => console.log(err));
 // Serving static files
 // express.static is a built-in middleware function in Express. It serves static files and is based on serve-static.
 // The function takes a root directory from which to serve static assets. In this case, we are serving files from the "static" directory.
