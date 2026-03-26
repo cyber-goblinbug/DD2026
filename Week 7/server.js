@@ -1,7 +1,7 @@
 // 1. setup a node app with command: npm init
 // 2. install express with command: npm install express
 // 3. create a file named server.js and add the following code
-
+// 4. start the db with command: brew services start mongodb-community //mac on windows start the mongodb server with command: & "C:\Program Files\MongoDB\Server\8.2\bin\mongod.exe" --dbpath="C:\data\db"
 const express = require("express");
 const app = express();
 const port = 3000;
@@ -15,17 +15,55 @@ app.set("view engine", "handlebars");
 // the path module is used to work with file and directory paths
 const path = require("path");
 
-
-// set up 
-// getting-started.js
-const mongoose = require('mongoose');
-
-const destinationSchema = new mongoose.Schema({
-  page: String,
+//setup db connection
+const mongoose = require("mongoose");
+const { title } = require("process");
+// create schemas
+const pageSchema = new mongoose.Schema({
+  slug: String, //about-us friendly url
+  name: String, //About Us
+  description: String,
+});
+const gallerySchema = new mongoose.Schema({
   name: String,
   description: String,
-  image: String
 });
+const imageSchema = new mongoose.Schema({
+  url: String,
+  caption: String,
+  gallery: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "galleries",
+  },
+});
+
+const destinationSchema = new mongoose.Schema(
+  {
+    page: String,
+    name: String,
+    description: String,
+    image: String,
+  },
+  {
+    virtuals: true,
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
+  },
+);
+// See virtuals in mongoose documentation https://mongoosejs.com/docs/guide.html#virtuals
+destinationSchema.virtual("activities", {
+  ref: "activities",
+  localField: "_id",
+  foreignField: "destination",
+});
+
+// Add virtual field for the gallery to the image schema
+gallerySchema.virtual("images", {
+  ref: "images",
+  localField: "_id",
+  foreignField: "gallery",
+});
+// Activities schema for things to do in each destination
 const activitySchema = new mongoose.Schema({
   name: String,
   description: String,
@@ -36,68 +74,89 @@ const activitySchema = new mongoose.Schema({
     ref: "destinations",
   },
 });
+
 const Destination = mongoose.model("destinations", destinationSchema);
 
 const Activity = mongoose.model("activities", activitySchema);
 
+const Page = mongoose.model("pages", pageSchema);
+
+const Gallery = mongoose.model("galleries", gallerySchema);
+
+const Image = mongoose.model("images", imageSchema);
+
 async function main() {
-  await mongoose.connect("mongodb://127.0.0.1:27017/travelsite");
+  await mongoose.connect("mongodb://127.0.0.1:27017/travelsites");
   // use `await mongoose.connect('mongodb://user:password@127.0.0.1:27017/test');` if your database has auth enabled
 }
 main().catch((err) => console.log(err));
+
 // Serving static files
+// review middleware in express under week 7 in black board or https://expressjs.com/en/guide/using-middleware.html
 // express.static is a built-in middleware function in Express. It serves static files and is based on serve-static.
 // The function takes a root directory from which to serve static assets. In this case, we are serving files from the "static" directory.
-// review middleware in express under week 7 in black board
 app.use(express.static(path.join(__dirname, "static")));
-
-app.use(express.urlencoded({extended: true}));
-
-
-//data
-
+// Parse the body of incoming requests with urlencoded payloads and is based on body-parser. This middleware is used to parse the body of incoming requests and make it available under the req.body property. The extended: true option allows for rich objects and arrays to be encoded into the URL-encoded format, which can be useful for complex data structures.
+app.use(express.urlencoded({ extended: true }));
+// data
 
 // generate routes
-app.get("/", (req, res) => {
-  // homepage
-  res.render("home",{title : "welcome to travel site"})
-  ;
+app.get("/", async (req, res) => {
+  // Homepage route
+  // Find the home page in the database and render it with the title "Welcome to Travel Site"
+  const homePage = await Page.findOne({ slug: "home" }).lean();
+  console.log(homePage);
+  //Bring in the gallery
+  const gallery = await Gallery.findOne({ name: "home" }).populate("images").lean();
+  console.log(gallery);
+  res.render("home", {
+    title: homePage.name,
+    description: homePage.description,
+    galleryImages: gallery.images,
+  });
 });
-// generate route 
-app.post("/destinations", async(req,res)=>{
 
-  const{page,name,description,image} = req.body;
-  console.log(req.body)
-  const newDestination =  Destination({
+// generate routes to populate destinations page
+app.post("/destinations", async (req, res) => {
+  // code to add a new destination to the database
+  const { page, name, description, image } = req.body;
+  console.log(req.body);
+  const newDestination = new Destination({
     page,
     name,
     description,
-    image
+    image,
   });
-
-
   await newDestination.save();
-
+  //res.redirect("/destinations");
   res.send("Destination added successfully");
-
 });
+// generate routes to display destinations page
+app.get("/destinations", async (req, res) => {
+  // code to fetch destinations from the database and render the destinations page
+  // .lean() is a method in Mongoose that is used to convert a Mongoose document into a plain JavaScript object. When you query the database using Mongoose, it returns a Mongoose document, which has additional methods and properties that are not present in a plain JavaScript object. By calling .lean(), you can get a plain JavaScript object instead of a Mongoose document, which can be more efficient for read-only operations where you don't need the additional functionality provided by Mongoose documents.
+  const destinations = await Destination.find().lean();
+  res.render("destinations", {
+    destinations: destinations,
+    title: "Destinations",
+  });
+});
+// Get a specific destination by _id
 app.get("/destinations/:id", async (req, res) => {
   const { id } = req.params;
-  const destination = await Destination.findById(id).lean();
-  const activities = await Activity.find({ destination: id }).lean();
+  const destination = await Destination.findById(id)
+    .populate("activities")
+    .lean();
+  //const activities = await Activity.find({ destination: id }).lean();
+
   res.render("details", {
     destination: destination,
     title: destination.name,
-    activities: activities,
+    activities: destination.activities,
   });
-});;
-//Get a specific destination by id
-app.get ("/destinations/:id", async(req,res)=>{
-  const {id} = req.params
-  const destinations = await Destination.findById(id).lean();
-  res.render ("details", {destinations: destinations, title: destinations.name});
 });
-// generate route for activities
+
+// activities routes
 app.post("/activities", async (req, res) => {
   const { name, description, image, cost, destination } = req.body;
   const newActivity = new Activity({
@@ -110,6 +169,40 @@ app.post("/activities", async (req, res) => {
   await newActivity.save();
   res.send("Activity added successfully");
 });
+
+// Create a new page
+app.post("/pages", async (req, res) => {
+  const { slug, name, description } = req.body;
+  const newPage = new Page({
+    slug,
+    name,
+    description,
+  });
+  await newPage.save();
+  res.send("Page added successfully");
+});
+// Create a new gallery
+app.post("/galleries", async (req, res) => {
+  const { name, description } = req.body;
+  const newGallery = new Gallery({
+    name,
+    description
+  });
+  await newGallery.save();
+  res.send("Gallery added successfully");
+});
+// Create a new image
+app.post("/images", async (req, res) => {
+  const { url, caption, gallery } = req.body;
+  const newImage = new Image({
+    url,
+    caption,
+    gallery,
+  });
+  await newImage.save();
+  res.send("Image added successfully");
+});
+
 // start the server
 app.listen(port, () => {
   console.log(`Example app listening at http://localhost:${port}`);
