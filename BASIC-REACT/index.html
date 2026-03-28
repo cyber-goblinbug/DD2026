@@ -12,11 +12,24 @@
 
 </head>
 <body>
+    <!--Important React concepts: Components, Props, State-->
     <div id="app"></div>
     <script type="text/jsx">
         const app = document.getElementById('app');
+        // React Components
+        function Header(props){
+            return <h1 className={props.class}> {props.title} </h1>
+        }
+        function Homepage(){
+            return (
+             <>
+                  <Header title="Welcome to the homepage" class = "header" />
+                  <Header title="Another header" class="subheader"/>
+                  <p>Welcome to the homepage!</p>
+             </>);
+        }
         const root = ReactDOM.createRoot(app);
-        root.render(<h1>Hello World</h1> );
+        root.render(<Homepage /> );
     </script>
 </body>
 </html>
