@@ -20,4 +20,16 @@
   </button>
 </div>
 
-({!-- destination--})
+{{!-- destination--}}
+<div class="row mt-5">
+{{#each destinations}}
+  <div class="col col-4 mb-4">
+    <div class="card h-100">
+      <img src="{{image}}" class="card-img-top img-fluid square" alt="{{name}} image">
+      <div class="card-body d-flex flex-column">
+        <h5 class="card-title">{{name}}</h5>
+        <a href="/destinations/{{_id}}" class="btn btn-primary mt-auto">View Details</a>
+      </div>
+    </div>
+  </div>
+{{/each}}

@@ -1,3 +1,4 @@
+
 // 1. setup a node app with command: npm init
 // 2. install express with command: npm install express
 // 3. create a file named server.js and add the following code
@@ -105,14 +106,17 @@ app.get("/", async (req, res) => {
   // Homepage route
   // Find the home page in the database and render it with the title "Welcome to Travel Site"
   const homePage = await Page.findOne({ slug: "home" }).lean();
-  console.log(homePage);
   //Bring in the gallery
-  const gallery = await Gallery.findOne({ name: "home" }).populate("images").lean();
-  console.log(gallery);
+  const gallery = await Gallery.findOne({ name: "home" })
+    .populate("images")
+    .lean();
+
+  const destinations = await Destination.find().lean();
   res.render("home", {
     title: homePage.name,
     description: homePage.description,
     galleryImages: gallery.images,
+    destinations: destinations,
   });
 });
 
@@ -186,7 +190,7 @@ app.post("/galleries", async (req, res) => {
   const { name, description } = req.body;
   const newGallery = new Gallery({
     name,
-    description
+    description,
   });
   await newGallery.save();
   res.send("Gallery added successfully");
