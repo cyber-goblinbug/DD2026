@@ -62,7 +62,14 @@
         // track results
         const [searchResults, setSearchResults] = React.useState([]);
 
-
+        function handleClick() {
+          setLikes(likes + 1);
+          //likes = likes + 1;
+          //likes += 1;
+          //likes++;
+          console.log("You clicked the button!");
+          console.log("Likes: ", likes);
+        }
         function performSearch() {
           const searchUrl = `https://www.cdn.miami.edu/_assets-common/php/searchblox/?q=${searchTerm}`;
           fetch(searchUrl)
@@ -99,7 +106,7 @@
               onChange={(e) => setName(e.target.value)}
             />
             <Paragraph text={`You entered: ${name}!`} />
-           
+            <button onClick={handleClick}> ({likes}) Likes</button>
             <br />
             <label htmlFor="search">Search: </label>
             <input
