@@ -29,6 +29,14 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col">
       <div className="w-full max-w-[1020px] m-auto p-4">
+        <nav className="flex items-center justify betwwen py-4">
+          <a href="/"className="text-2xl font-bold p-2 m-2">
+          Travel Site Admin
+          </a>
+          <a href="/destinations" className="text-2xl font-bold p-2 m-2">
+            Destinations
+          </a>
+        </nav>
       {children}
       </div>
       </body>
