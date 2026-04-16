@@ -1,11 +1,10 @@
-
 // 1. setup a node app with command: npm init
 // 2. install express with command: npm install express
 // 3. create a file named server.js and add the following code
 // 4. start the db with command: brew services start mongodb-community //mac on windows start the mongodb server with command: & "C:\Program Files\MongoDB\Server\8.2\bin\mongod.exe" --dbpath="C:\data\db"
 const express = require("express");
 const app = express();
-// change port to 3001 to avoid conflict with react development server which runs on port 3000 by default
+// change port to 3001 to avoid conflict with React development server which runs on port 3000 by default
 const port = 3001;
 
 // https://www.npmjs.com/package/express-handlebars is a Handlebars view engine for Express which provides a way to render dynamic HTML pages using Handlebars templates. It allows you to separate your HTML structure from your application logic, making it easier to manage and maintain your views. With express-handlebars, you can create reusable templates, partials, and layouts, which can help you build more complex and dynamic web applications efficiently.
@@ -88,7 +87,7 @@ const Gallery = mongoose.model("galleries", gallerySchema);
 const Image = mongoose.model("images", imageSchema);
 
 async function main() {
-  await mongoose.connect("mongodb://127.0.0.1:27017/travelsites");
+  await mongoose.connect("mongodb://127.0.0.1:27017/travelsite");
   // use `await mongoose.connect('mongodb://user:password@127.0.0.1:27017/test');` if your database has auth enabled
 }
 main().catch((err) => console.log(err));
@@ -101,13 +100,13 @@ app.use(express.static(path.join(__dirname, "static")));
 // Parse the body of incoming requests with urlencoded payloads and is based on body-parser. This middleware is used to parse the body of incoming requests and make it available under the req.body property. The extended: true option allows for rich objects and arrays to be encoded into the URL-encoded format, which can be useful for complex data structures.
 app.use(express.urlencoded({ extended: true }));
 // data
-// Set up basic CORS headers for communicating  with APIs
+// Set up Basic CORS headers for communicating with APIs and accept POST, PUT, DELETE, GET requests from any origin. This middleware is used to set the CORS headers for the responses. The Access-Control-Allow-Origin header allows requests from any origin, and the Access-Control-Allow-Headers header specifies which headers are allowed in the requests.
 app.use((req, res, next) => {
-  res.header("Access-Control-Allow-Origin", "*"); //allow requests from any origin. This should not be used in production without proper security measures in place.
+  res.header("Access-Control-Allow-Origin", "*"); // Allow requests from any origin. This should not be used in production without proper security measures in place.
   res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
   res.header(
     "Access-Control-Allow-Headers",
-    "Origin, X-Requested-With, Content-Type, Accept"
+    "Origin, X-Requested-With, Content-Type, Accept",
   );
   next();
 });
@@ -217,8 +216,7 @@ app.post("/images", async (req, res) => {
   await newImage.save();
   res.send("Image added successfully");
 });
-
-// setup bvasic api routes
+// setup basic api routes
 app.get("/api/destinations", async (req, res) => {
   const destinations = await Destination.find().lean();
   res.json(destinations);

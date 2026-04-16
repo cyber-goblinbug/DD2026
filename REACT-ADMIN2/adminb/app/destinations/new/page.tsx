@@ -1,5 +1,7 @@
 "use client";
-import { useState } from "react";   
+import { useState } from "react";
+// form fields: name, page, description,image  
+
 export default function NewDestinationPage() {
     const [formData, setFormData] = useState({
         name: "",
@@ -7,6 +9,9 @@ export default function NewDestinationPage() {
         description: "",
         image: ""
     });
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         setFormData({
             ...formData,
@@ -14,26 +19,107 @@ export default function NewDestinationPage() {
         });
         console.log(formData);
     };
+
+    const handleSubmit = async (e: React.SubmitEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        setLoading(true);
+        setError(null);
+        // Here you would typically send formData to your backend API
+        console.log("Form submitted:", formData);
+        try {
+            // fetch the data 
+            const response = await fetch("http://localhost:3001/api/destinations", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(formData)
+            });
+            if (!response.ok) {
+                throw new Error("Failed to add destination");
+            }
+        } catch (err) {
+            setError((err as Error).message);
+        } finally {
+            setLoading(false);
+        }
+
+
+    }
+
+
   return (
+        <div className="max-w-[600px] w-full">
+            <h1 className="text-3xl font-bold">Add New Destination</h1>
+            <form className="mt-4" onSubmit={handleSubmit}>
+                
+                <div className="mb-4">
+                    <label className="block w-full font-bold" htmlFor="name">
+                        Name:
+                    </label>
+                    <input 
+                    type="text"
+                    id="name"
+                    name="name"
+                    value={formData.name}
+                    onChange={handleChange}
+                    className="border border-gray-300 rounded py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>  
 
-    <div className="max-w-[600px] w-full">
-      <h1 className="text-3xl font-bold">Create New Destination</h1>
-      <form className="mt-4">
-        <div>
-            <label className="block w-full font-bold " htmlFor="name">Name</label>
-            <input type="text" 
-            id="name"  
-            name="name"
-            value=""
-            
-            className="border border-grey-300 rounded py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                <div className="mb-4">
+                    <label className="block w-full font-bold" htmlFor="page">
+                        Page:
+                    </label>
+                    <input 
+                    type="text"
+                    id="page"
+                    name="page"
+                    onChange={handleChange}
+                    value={formData.page}
+                    className="border border-gray-300 rounded py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>  
+
+                  <div className="mb-4">
+                    <label className="block w-full font-bold" htmlFor="description">
+                        Description:
+                    </label>
+                    <textarea
+                    id="description"
+                    name="description"
+                    className="border border-gray-300 rounded py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    onChange={handleChange}
+                    value={formData.description}
+                    /> 
+                    
+                  </div>                    
+                    <div className="mb-4">
+                    <label className="block w-full font-bold" htmlFor="image">
+                        Image:
+                    </label>
+                    <input 
+                    type="text"
+                    id="image"
+                    name="image"
+                    value={formData.image}
+                    onChange={handleChange}
+                    className="border border-gray-300 rounded py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div> 
+                  <div className="mb-4">
+                    {error && <p className="text-red-500">{error}</p>}
+                    <button type="submit" 
+                    className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
+                    disabled={loading}
+                    >
+                        Add Destination
+                    </button>
+                    </div> 
+
+            </form>
+        
         </div>
-
-
-
-
-      </form>
-      {/* Add your form fields here */}
-    </div>
-  );
+  );   
 }
+         
