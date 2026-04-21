@@ -7,7 +7,7 @@ export default function NewDestinationPage() {
         name: "",
         page: "",
         description: "",
-        image: ""
+        image: null as File | null
     });
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -17,23 +17,37 @@ export default function NewDestinationPage() {
             ...formData,
             [e.target.name]: e.target.value
         });
-        console.log(formData);
+        
+    };
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const target = e.target as HTMLInputElement;
+        if(e.target.files && e.target.files[0]) {
+            setFormData({
+                ...formData,
+                image: e.target.files[0]
+            });
+        }
     };
 
-    const handleSubmit = async (e: React.SubmitEvent<HTMLFormElement>) => {
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setLoading(true);
         setError(null);
         // Here you would typically send formData to your backend API
         console.log("Form submitted:", formData);
+        const body= new FormData();
+        body.append("name", formData.name);
+        body.append("page", formData.page);
+        body.append("description", formData.description);
+        if(formData.image) {
+            body.append("image", formData.image);
+        }
+        
         try {
             // fetch the data 
             const response = await fetch("http://localhost:3001/api/destinations", {
                 method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify(formData)
+                body: body
             });
             if (!response.ok) {
                 throw new Error("Failed to add destination");
@@ -99,11 +113,11 @@ export default function NewDestinationPage() {
                         Image:
                     </label>
                     <input 
-                    type="text"
+                    type="file"
                     id="image"
                     name="image"
-                    value={formData.image}
-                    onChange={handleChange}
+                    accept="image/*"
+                    onChange={handleFileChange}
                     className="border border-gray-300 rounded py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                   </div> 
