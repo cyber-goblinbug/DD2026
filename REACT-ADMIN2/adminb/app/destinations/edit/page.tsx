@@ -1,10 +1,19 @@
 "use client";
-import { useState } from "react";
-import { redirect } from "next/navigation";
+import { useState ,useEffect} from "react";
+import { redirect, useSearchParams} from "next/navigation";
 
 // form fields: name, page, description,image  
 
-export default function NewDestinationPage() {
+interface Destination {
+  _id: string;
+  name: string;
+  image: string;
+  description: string;
+}
+
+
+export default function UpdateDestinationPage() {
+    const router = useSearchParams();
     const [formData, setFormData] = useState({
         name: "",
         page: "",
@@ -70,7 +79,7 @@ export default function NewDestinationPage() {
 
   return (
         <div className="max-w-[600px] w-full">
-            <h1 className="text-3xl font-bold">Add New Destination</h1>
+            <h1 className="text-3xl font-bold">Edit Destination{router.get("id")}</h1>
             <form className="mt-4" onSubmit={handleSubmit}>
                 
                 <div className="mb-4">
