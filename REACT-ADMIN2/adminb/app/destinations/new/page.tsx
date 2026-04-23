@@ -1,10 +1,11 @@
 "use client";
 import { useState } from "react";
-import { redirect } from "next/navigation";
+import { useRouter } from "next/navigation";
 
 // form fields: name, page, description,image  
 
 export default function NewDestinationPage() {
+    const router = useRouter();
     const [formData, setFormData] = useState({
         name: "",
         page: "",
@@ -19,11 +20,11 @@ export default function NewDestinationPage() {
             ...formData,
             [e.target.name]: e.target.value
         });
-        
+        console.log(formData);
     };
+
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const target = e.target as HTMLInputElement;
-        if(e.target.files && e.target.files[0]) {
+        if (e.target.files && e.target.files[0]) {
             setFormData({
                 ...formData,
                 image: e.target.files[0]
@@ -31,20 +32,21 @@ export default function NewDestinationPage() {
         }
     };
 
-    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+
+    const handleSubmit = async (e: React.SubmitEvent<HTMLFormElement>) => {
         e.preventDefault();
         setLoading(true);
         setError(null);
         // Here you would typically send formData to your backend API
         console.log("Form submitted:", formData);
-        const body= new FormData();
+        const body = new FormData();
         body.append("name", formData.name);
         body.append("page", formData.page);
         body.append("description", formData.description);
-        if(formData.image) {
+        if (formData.image) {
             body.append("image", formData.image);
         }
-        
+
         try {
             // fetch the data 
             const response = await fetch("http://localhost:3001/api/destinations", {
@@ -53,16 +55,19 @@ export default function NewDestinationPage() {
             });
             if (!response.ok) {
                 throw new Error("Failed to add destination");
-            }
-            else {
-                //redirect("/destinations");
+            } else {
+                // everything worked.. send the user back to destinations page 
+                router.push('/destinations');
+                
             }
         } catch (err) {
             setError((err as Error).message);
         } finally {
             setLoading(false);
-            redirect("/destinations");
+           
         }
+
+      
 
 
     }

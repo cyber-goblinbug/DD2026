@@ -1,19 +1,28 @@
 "use client";
-import { useState ,useEffect} from "react";
-import { redirect, useSearchParams} from "next/navigation";
+import { useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 
 // form fields: name, page, description,image  
-
-interface Destination {
-  _id: string;
-  name: string;
-  image: string;
-  description: string;
-}
-
-
 export default function UpdateDestinationPage() {
-    const router = useSearchParams();
+    
+    const searchParams = useSearchParams();
+    const router = useRouter();
+useEffect(() => {
+    // Simulate fetching destinations from an API
+    const fetchDestination = async () => {
+      // Replace this with your actual API call
+      const response = await fetch("http://localhost:3001/api/destinations/"+searchParams.get('id'));
+
+      const data = await response.json();
+      
+      setFormData(data);
+
+      console.log(data)
+    };
+
+    fetchDestination();
+  }, []);
+
     const [formData, setFormData] = useState({
         name: "",
         page: "",
@@ -28,11 +37,11 @@ export default function UpdateDestinationPage() {
             ...formData,
             [e.target.name]: e.target.value
         });
-        
+        console.log(formData);
     };
+
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const target = e.target as HTMLInputElement;
-        if(e.target.files && e.target.files[0]) {
+        if (e.target.files && e.target.files[0]) {
             setFormData({
                 ...formData,
                 image: e.target.files[0]
@@ -40,20 +49,21 @@ export default function UpdateDestinationPage() {
         }
     };
 
-    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+
+    const handleSubmit = async (e: React.SubmitEvent<HTMLFormElement>) => {
         e.preventDefault();
         setLoading(true);
         setError(null);
         // Here you would typically send formData to your backend API
         console.log("Form submitted:", formData);
-        const body= new FormData();
+        const body = new FormData();
         body.append("name", formData.name);
         body.append("page", formData.page);
         body.append("description", formData.description);
-        if(formData.image) {
+        if (formData.image) {
             body.append("image", formData.image);
         }
-        
+
         try {
             // fetch the data 
             const response = await fetch("http://localhost:3001/api/destinations", {
@@ -62,16 +72,20 @@ export default function UpdateDestinationPage() {
             });
             if (!response.ok) {
                 throw new Error("Failed to add destination");
-            }
-            else {
-                //redirect("/destinations");
+            } else {
+                // everything worked.. send the user back to destinations page 
+                router.push('/destinations');
+                
             }
         } catch (err) {
             setError((err as Error).message);
         } finally {
             setLoading(false);
-            redirect("/destinations");
+            
+           
         }
+
+ 
 
 
     }
@@ -79,7 +93,7 @@ export default function UpdateDestinationPage() {
 
   return (
         <div className="max-w-[600px] w-full">
-            <h1 className="text-3xl font-bold">Edit Destination{router.get("id")}</h1>
+            <h1 className="text-3xl font-bold">Edit Destination {searchParams.get('id')}</h1>
             <form className="mt-4" onSubmit={handleSubmit}>
                 
                 <div className="mb-4">
